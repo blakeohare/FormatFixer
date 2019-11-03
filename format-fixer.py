@@ -60,7 +60,7 @@ class FormatStyle:
       lines = map(lambda x: x.rstrip(), lines)
 
     if self.xcode_proj:
-    # TODO: configure this
+      # TODO: configure this
       lines = fix_pbxproj_file(lines, 'ID_GOES_HERE')
 
     new_lines = []
@@ -130,9 +130,7 @@ BAD_PATH_MARKERS = os_pathify([
 
 IGNORE_FILES = os_pathify([
   'package.json',
-  'skulpt/skulpt.js',
-  'skulpt/stdlib.js',
-  'skulpt/jquery.js',
+  '.min.js',
 ])
 
 def get_all_files_impl(path, output):
@@ -167,9 +165,17 @@ def main():
   for raw_line in config_file.split('\n'):
     t = raw_line.split('#')[0].strip().split(':')
     if len(t) >= 2:
-      style = styles.get(t[0].strip())
-      if style != None:
-        pattern = ':'.join(t[1:]).strip()
+      style_name = t[0].strip()
+      style = styles.get(style_name)
+      pattern = ':'.join(t[1:]).strip()
+      if style == None:
+        if style_name == 'IGNORE':
+          IGNORE_FILES.append(pattern)
+        elif style_name == 'BAD_PATH':
+          BAD_PATH_MARKERS.append(pattern)
+        else:
+          print("Unknown style: " + style_name)
+      else:
         MATCHERS.append((pattern, style))
 
   all_files = get_all_files()
