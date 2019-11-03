@@ -1,7 +1,9 @@
-﻿PHP: php/*.php
-PHP: index.php
-PYTHON: format-fixer.py
-PYTHON: release.py
+﻿# Add paths that you want to match. These are string matches, and so the asterisk refers to any possible path that includes /'s
+PHP: sample/*.php
 
-# Tests
-CRAYON: EndToEndTests/*.cry
+# You can ignore file suffixes using IGNORE. These are string suffix matches and do not include *'s
+IGNORE: .min.js
+
+# You can ignore directories using BAD_PATH. Directories that end with this string will not be traversed. These do not include *'s
+BAD_PATH: /bin
+
