@@ -1,3 +1,5 @@
+FILENAME = 'config-formatting.txt'
+
 import array
 import os
 import sys
@@ -58,6 +60,7 @@ class FormatStyle:
       lines = map(lambda x: x.rstrip(), lines)
 
     if self.xcode_proj:
+    # TODO: configure this
       lines = fix_pbxproj_file(lines, 'ID_GOES_HERE')
 
     new_lines = []
@@ -88,38 +91,28 @@ class FormatStyle:
 
     return text
 
-ACRYLIC_STYLE = FormatStyle().tabs(' ' * 4).newline('\n').noBom()
-CSHARP_STYLE = FormatStyle().tabs(' ' * 4).newline('\r\n')
-CRAYON_STYLE = FormatStyle().tabs(' ' * 4).newline('\n')
-CSPROJ_STYLE = FormatStyle().tabs(' ' * 2).newline('\r\n').disableEndNewline().enableCanonicalizeCsprojToolsVersion()
-PASTEL_STYLE = FormatStyle().tabs(' ' * 4).newline('\n')
-PYTHON_STYLE_2_SPACES = FormatStyle().tabs(' ' * 2).newline('\n').noBom()
-PYTHON_STYLE_4_SPACES = FormatStyle().tabs(' ' * 4).newline('\n').noBom()
-JAVA_STYLE = FormatStyle().tabs(' ' * 4).newline('\n').noBom()
-JAVA_ANDROID_STYLE = FormatStyle().tabs(' ' * 2).newline('\n')
-JAVASCRIPT_STYLE = FormatStyle().tabs('\t').newline('\n')
-JSON_STYLE = FormatStyle().tabs(' ' * 4).newline('\n').noBom()
-MARKDOWN_STYLE = FormatStyle().tabs(' ' * 2).newline('\n').noBom()
-PHP_STYLE = FormatStyle().tabs(' ' * 4).newline('\n').disableEndNewline().noBom()
-PBXPROJ_STYLE = FormatStyle().tabs("\t").newline('\n').noBom().xcodeProjNoDeveloperId()
-SWIFT_STYLE = FormatStyle().tabs(' ' * 4).newline('\n').noBom()
+styles = {
+  'ACRYLIC': FormatStyle().tabs(' ' * 4).newline('\n').noBom(),
+  'CSHARP': FormatStyle().tabs(' ' * 4).newline('\r\n'),
+  'CRAYON': FormatStyle().tabs(' ' * 4).newline('\n'),
+  'CSPROJ': FormatStyle().tabs(' ' * 2).newline('\r\n').disableEndNewline().enableCanonicalizeCsprojToolsVersion(),
+  'PASTEL': FormatStyle().tabs(' ' * 4).newline('\n'),
+  'PYTHON': FormatStyle().tabs(' ' * 2).newline('\n').noBom(),
+  'PYTHON_4_SPACES': FormatStyle().tabs(' ' * 4).newline('\n').noBom(),
+  'JAVA': FormatStyle().tabs(' ' * 4).newline('\n').noBom(),
+  'JAVA_ANDROID': FormatStyle().tabs(' ' * 2).newline('\n'),
+  'JAVASCRIPT': FormatStyle().tabs('\t').newline('\n'),
+  'JSON': FormatStyle().tabs(' ' * 4).newline('\n').noBom(),
+  'MARKDOWN': FormatStyle().tabs(' ' * 2).newline('\n').noBom(),
+  'PHP': FormatStyle().tabs(' ' * 4).newline('\n').disableEndNewline().noBom(),
+  'PBXPROJ': FormatStyle().tabs("\t").newline('\n').noBom().xcodeProjNoDeveloperId(),
+  'SWIFT': FormatStyle().tabs(' ' * 4).newline('\n').noBom(),
+
+  'FORMAT_CONFIG': FormatStyle().tabs('    ').newline('\n'),
+}
 
 def os_pathify(paths):
   return list(map(lambda f: f.replace('/', os.sep), paths))
-
-MATCHERS = [
-  ('php/*.php', PHP_STYLE),
-  ('index.php', PHP_STYLE),
-
-  # Python
-  ('format-fixer.py', PYTHON_STYLE_2_SPACES),
-  ('release.py', PYTHON_STYLE_2_SPACES),
-
-  # Tests
-  ('EndToEndTests/*.cry', CRAYON_STYLE),
-
-  ('*.py', PYTHON_STYLE_2_SPACES),
-]
 
 def get_all_files():
   output = []
@@ -165,8 +158,19 @@ def get_all_files_impl(path, output):
 def main():
 
   if sys.version_info.major < 3:
-    print("Python 2 is no longer supported for this script.")
+    print("Python 2 is not supported by this script.")
     return
+
+  config_file = read_text(FILENAME) + "\n\nFORMAT_CONFIG: " + FILENAME + "\n"
+
+  MATCHERS = []
+  for raw_line in config_file.split('\n'):
+    t = raw_line.split('#')[0].strip().split(':')
+    if len(t) >= 2:
+      style = styles.get(t[0].strip())
+      if style != None:
+        pattern = ':'.join(t[1:]).strip()
+        MATCHERS.append((pattern, style))
 
   all_files = get_all_files()
   for pattern, matcher in MATCHERS:

@@ -1,0 +1,7 @@
+﻿PHP: php/*.php
+PHP: index.php
+PYTHON: format-fixer.py
+PYTHON: release.py
+
+# Tests
+CRAYON: EndToEndTests/*.cry
