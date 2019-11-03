@@ -110,7 +110,6 @@ def os_pathify(paths):
 MATCHERS = [
   ('php/*.php', PHP_STYLE),
   ('index.php', PHP_STYLE),
-  ('beta_ip_whitelist.php', PHP_STYLE),
 
   # Python
   ('format-fixer.py', PYTHON_STYLE_2_SPACES),
@@ -119,19 +118,7 @@ MATCHERS = [
   # Tests
   ('EndToEndTests/*.cry', CRAYON_STYLE),
 
-  ('KumoCli/*.csproj', CSPROJ_STYLE),
-  ('KumoCli/*.cs', CSHARP_STYLE),
-  ('KumoCli/*Py.txt', PYTHON_STYLE_4_SPACES),
-  ('DesktopAppHost/*.js', JAVASCRIPT_STYLE),
-  ('AndroidAppHost/app/src/main/java/*.java', JAVA_STYLE),
-  ('AndroidAppHost/app/src/main/assets/*.js', JAVASCRIPT_STYLE),
-  ('KumoJsAppHostSource/*.js', JAVASCRIPT_STYLE),
-  ('iOSAppHost/*.pbxproj', PBXPROJ_STYLE),
-  ('iOSAppHost/*.swift', SWIFT_STYLE),
-  ('iOSAppHost/KumoAppHost/jsres/*.js', JAVASCRIPT_STYLE),
   ('*.py', PYTHON_STYLE_2_SPACES),
-  ('KumoCli/KumoCli/Resources/*_py.txt', PYTHON_STYLE_2_SPACES),
-  ('KumoCli/KumoCli/Resources/*_js.txt', JAVASCRIPT_STYLE),
 ]
 
 def get_all_files():
