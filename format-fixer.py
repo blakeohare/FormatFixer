@@ -11,6 +11,7 @@ class FormatStyle:
     self.should_end_with_newline = True
     self.canonicalize_csproj_tools_version = False
     self.include_bom = True
+    self.xcode_proj = False
 
   def tabs(self, tab_char):
     self.tab_char = tab_char
@@ -36,6 +37,10 @@ class FormatStyle:
     self.canonicalize_csproj_tools_version = True
     return self
 
+  def xcodeProjNoDeveloperId(self):
+    self.xcode_proj = True
+    return self
+
   def apply(self, text):
     if self.should_trim:
       text = text.strip()
@@ -50,7 +55,10 @@ class FormatStyle:
     lines = text.replace('\r\n', '\n').split('\n')
 
     if self.should_rtrim:
-      lines = map(lambda x:x.rstrip(), lines)
+      lines = map(lambda x: x.rstrip(), lines)
+
+    if self.xcode_proj:
+      lines = fix_pbxproj_file(lines, 'ID_GOES_HERE')
 
     new_lines = []
     for line in lines:
@@ -87,14 +95,19 @@ CSPROJ_STYLE = FormatStyle().tabs(' ' * 2).newline('\r\n').disableEndNewline().e
 PASTEL_STYLE = FormatStyle().tabs(' ' * 4).newline('\n')
 PYTHON_STYLE_2_SPACES = FormatStyle().tabs(' ' * 2).newline('\n').noBom()
 PYTHON_STYLE_4_SPACES = FormatStyle().tabs(' ' * 4).newline('\n').noBom()
-JAVA_STYLE = FormatStyle().tabs(' ' * 2).newline('\n')
+JAVA_STYLE = FormatStyle().tabs(' ' * 4).newline('\n').noBom()
+JAVA_ANDROID_STYLE = FormatStyle().tabs(' ' * 2).newline('\n')
 JAVASCRIPT_STYLE = FormatStyle().tabs('\t').newline('\n')
 JSON_STYLE = FormatStyle().tabs(' ' * 4).newline('\n').noBom()
 MARKDOWN_STYLE = FormatStyle().tabs(' ' * 2).newline('\n').noBom()
 PHP_STYLE = FormatStyle().tabs(' ' * 4).newline('\n').disableEndNewline().noBom()
+PBXPROJ_STYLE = FormatStyle().tabs("\t").newline('\n').noBom().xcodeProjNoDeveloperId()
+SWIFT_STYLE = FormatStyle().tabs(' ' * 4).newline('\n').noBom()
+
+def os_pathify(paths):
+  return list(map(lambda f: f.replace('/', os.sep), paths))
 
 MATCHERS = [
-  # PHP
   ('php/*.php', PHP_STYLE),
   ('index.php', PHP_STYLE),
   ('beta_ip_whitelist.php', PHP_STYLE),
@@ -105,6 +118,20 @@ MATCHERS = [
 
   # Tests
   ('EndToEndTests/*.cry', CRAYON_STYLE),
+
+  ('KumoCli/*.csproj', CSPROJ_STYLE),
+  ('KumoCli/*.cs', CSHARP_STYLE),
+  ('KumoCli/*Py.txt', PYTHON_STYLE_4_SPACES),
+  ('DesktopAppHost/*.js', JAVASCRIPT_STYLE),
+  ('AndroidAppHost/app/src/main/java/*.java', JAVA_STYLE),
+  ('AndroidAppHost/app/src/main/assets/*.js', JAVASCRIPT_STYLE),
+  ('KumoJsAppHostSource/*.js', JAVASCRIPT_STYLE),
+  ('iOSAppHost/*.pbxproj', PBXPROJ_STYLE),
+  ('iOSAppHost/*.swift', SWIFT_STYLE),
+  ('iOSAppHost/KumoAppHost/jsres/*.js', JAVASCRIPT_STYLE),
+  ('*.py', PYTHON_STYLE_2_SPACES),
+  ('KumoCli/KumoCli/Resources/*_py.txt', PYTHON_STYLE_2_SPACES),
+  ('KumoCli/KumoCli/Resources/*_js.txt', JAVASCRIPT_STYLE),
 ]
 
 def get_all_files():
@@ -112,12 +139,21 @@ def get_all_files():
   get_all_files_impl('.', output)
   return output
 
-BAD_PATH_MARKERS = [
-  '/obj/Debug'.replace('/', os.sep),
-  '/obj/Release'.replace('/', os.sep),
-  '/bin/Debug'.replace('/', os.sep),
-  '/bin/Release'.replace('/', os.sep),
-]
+BAD_PATH_MARKERS = os_pathify([
+  '/obj/Debug',
+  '/obj/Release',
+  '/bin/Debug',
+  '/bin/Release',
+  '/node_modules',
+  '/.vscode',
+])
+
+IGNORE_FILES = os_pathify([
+  'package.json',
+  'skulpt/skulpt.js',
+  'skulpt/stdlib.js',
+  'skulpt/jquery.js',
+])
 
 def get_all_files_impl(path, output):
   for file in os.listdir(path):
@@ -131,7 +167,13 @@ def get_all_files_impl(path, output):
       if not bad:
         get_all_files_impl(full_path, output)
     else:
-      output.append(full_path[2:])
+      bad = False
+      for ignore_file in IGNORE_FILES:
+        if full_path.endswith(ignore_file):
+          bad = True
+          break
+      if not bad:
+        output.append(full_path[2:])
 
 def main():
 
@@ -216,5 +258,17 @@ def write_text(path, text, newline_char, include_bom):
     c = open(path, 'wb')
     c.write(bytearray(new_bytes))
     c.close()
+
+def fix_pbxproj_file(lines, devId):
+  output = []
+  for line in lines:
+    if '=' in line and ('DevelopmentTeam =' in line or 'DEVELOPMENT_TEAM =' in line):
+      if devId == None:
+        pass
+      else:
+        output.append(line.split('=')[0] + '= ' + devId + ';')
+    else:
+      output.append(line)
+  return output
 
 main()
