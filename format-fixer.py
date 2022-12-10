@@ -101,7 +101,7 @@ styles = {
   'PYTHON_4_SPACES': FormatStyle().tabs(' ' * 4).newline('\n').noBom(),
   'JAVA': FormatStyle().tabs(' ' * 4).newline('\n').noBom(),
   'JAVA_ANDROID': FormatStyle().tabs(' ' * 2).newline('\n'),
-  'JAVASCRIPT': FormatStyle().tabs('\t').newline('\n'),
+  'JAVASCRIPT': FormatStyle().tabs('  ').newline('\n'),
   'JSON': FormatStyle().tabs(' ' * 4).newline('\n').noBom(),
   'MARKDOWN': FormatStyle().tabs(' ' * 2).newline('\n').noBom(),
   'PHP': FormatStyle().tabs(' ' * 4).newline('\n').disableEndNewline().noBom(),
@@ -126,10 +126,13 @@ BAD_PATH_MARKERS = os_pathify([
   '/bin/Release',
   '/node_modules',
   '/.vscode',
+  '/.git',
 ])
 
 IGNORE_FILES = os_pathify([
   'package.json',
+  'package-lock.json',
+  'yarn.lock',
   '.min.js',
 ])
 
